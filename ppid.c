@@ -6,6 +6,6 @@ int main()
 {
     pid_t id;
     id = fork();
-    printf(" i d = %d , p i d = %d , ppid = %d \ n ", id, getpid(), getppid());
+    printf(" id = %d , pid = %d , ppid = %d \n ", id, getpid(), getppid());
     return 0;
 }

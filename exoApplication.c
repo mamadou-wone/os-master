@@ -10,16 +10,17 @@ int main()
     switch (status)
     {
     case -1:
-        perror(" C r e at i o n de p rocessus ");
+        perror(" Creation de processus ");
         return -1;
     case 0:
-        printf("[%d ] Je v ien s de n a i t r e \ n ", getpid());
-        printf("[%d ] Mon pere %d \ n ", getpid(), getppid());
+        printf("[%d ] Je viens de naitre \n ", getpid());
+        printf("[%d ] Mon pere %d \n ", getpid(), getppid());
         break;
     default:
-        printf("[%d ] J \ ’ a i engendre \ n ", getpid());
-        printf("[%d ] Mon f i l s e st %d \ n ", getpid(), status);
+        // printf("[%d ] J \ ’ ai engendre \n", getpid());
+        printf("[%d] jai engendre \n", getpid());
+        printf("[%d ] Mon fil sest %d \n ", getpid(), status);
     }
-    printf("[%d ] Je te rmine \ n ", getpid());
+    printf("[%d ] Je termine \n ", getpid());
     exit(EXIT_SUCCESS);
 }

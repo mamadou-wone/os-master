@@ -1,0 +1,15 @@
+a.out
+app.c
+app.out
+attente1.c
+att.out
+d.ou
+duplicate.c
+ex1.out
+exoApplication.c
+fork
+fork.c
+f.out
+ls.txt
+ppid
+ppid.c
