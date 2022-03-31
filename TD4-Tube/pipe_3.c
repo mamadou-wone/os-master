@@ -3,12 +3,31 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <sys/types.h>
+#include <signal.h>
+
+void handler(int sig_number)
+{
+    switch (sig_number)
+    {
+    case SIGUSR1:
+        printf("Processus de pip[%d] recoit le signal SIGUSR1[%d] \n", getpid(), sig_number);
+        sleep(5);
+        kill(getppid(), SIGUSR2);
+        // exit(EXIT_SUCCESS);
+        break;
+    case SIGUSR2:
+        printf("Processus de pip[%d] recoit le signal SIGUSR2[%d] \n", getpid(), sig_number);
+        // exit(EXIT_SUCCESS);
+        break;
+    }
+}
 
 void g_son(int tube_fp[2], int tube_fp_r[2])
 {
     int i, tmp, pf;
     printf("Petit-Fils de pid[%d] et mon pere est [%d]\n", getpid(), getppid());
-
+    sleep(3);
+    kill(getppid(), SIGUSR1);
     if (close(tube_fp_r[0]) == -1)
     {
         perror("Petit-Fils: Erreur lors de la fermeture du tube en lecture\n");
@@ -60,7 +79,9 @@ void son(int tube[2], int tube_r[2])
     int i, tpm, tube_fp[2], tube_fp_r[2], pf;
 
     printf("Fils de pid[%d] et mon pere est [%d]\n", getpid(), getppid());
-
+    // sleep(5);
+    // kill(getppid(), SIGUSR2);
+    sleep(2);
     if (pipe(tube_fp) == -1 || pipe(tube_fp_r) == -1)
     {
         perror("Fils: Erreur lors de la creation du tube\n");
@@ -88,6 +109,9 @@ void son(int tube[2], int tube_r[2])
     if (pid == 0)
         g_son(tube_fp, tube_fp_r);
 
+    signal(SIGUSR1, handler);
+    pause();
+
     if (close(tube_fp_r[1]) == -1)
     {
         perror("Fils: erreur lors de la fermeture du tube en ecriture\n");
@@ -99,7 +123,6 @@ void son(int tube[2], int tube_r[2])
         perror("Fils: Erreur lors de la fermeture du tube en ecriture\n");
         exit(EXIT_FAILURE);
     }
-
     for (i = 1; i <= 5; i++)
     {
         if (read(tube[0], &tpm, sizeof(int)) == -1)
@@ -154,7 +177,7 @@ void son(int tube[2], int tube_r[2])
     }
 
     printf("Fils[%d] terminé\n", getpid());
-    exit(EXIT_SUCCESS);
+    kill(getpid(), SIGKILL);
 }
 
 void father()
@@ -188,7 +211,8 @@ void father()
         perror("Pere: Erreur lors de la fermeture du tube en lecture\n");
         exit(EXIT_FAILURE);
     }
-
+    signal(SIGUSR2, handler);
+    pause();
     for (i = 1; i <= 5; i++)
     {
         if (write(tube[1], &i, sizeof(int)) == -1)
@@ -221,7 +245,8 @@ void father()
     }
 
     printf("Pere[%d] termine \n", getpid());
-    exit(EXIT_SUCCESS);
+    // exit(EXIT_SUCCESS);
+    kill(getpid(), SIGKILL);
 }
 
 int main(int argc, char const *argv[])
