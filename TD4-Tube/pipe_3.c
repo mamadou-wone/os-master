@@ -22,12 +22,25 @@ void handler(int sig_number)
     }
 }
 
+void handler_f(int sig_number)
+{
+    switch (sig_number)
+    {
+    case SIGUSR1:
+        printf("Processus de pip[%d] recoit le signal SIGUSR1[%d] \n", getpid(), sig_number);
+        sleep(5);
+        kill(getppid(), SIGUSR1);
+        break;
+    }
+}
+
+
+
 void g_son(int tube_fp[2], int tube_fp_r[2])
 {
     int i, tmp, pf;
+    signal(SIGUSR1, handler_f);
     printf("Petit-Fils de pid[%d] et mon pere est [%d]\n", getpid(), getppid());
-    sleep(3);
-    kill(getppid(), SIGUSR1);
     if (close(tube_fp_r[0]) == -1)
     {
         perror("Petit-Fils: Erreur lors de la fermeture du tube en lecture\n");
@@ -39,6 +52,13 @@ void g_son(int tube_fp[2], int tube_fp_r[2])
         perror("Petit-Fils: Erreur lors de la fermeture du tube en ecriture\n");
         exit(EXIT_FAILURE);
     }
+
+    sleep(3);
+    printf("FIls[%d]: Attente de reception du signal SIGUSR1\n", getpid());
+    
+    
+    kill(getppid(), SIGUSR1);
+
     for (i = 1; i <= 5; i++)
     {
         if (read(tube_fp[0], &tmp, sizeof(int)) == -1)
@@ -70,14 +90,19 @@ void g_son(int tube_fp[2], int tube_fp_r[2])
         exit(EXIT_FAILURE);
     }
     printf("Petit-Fils[%d] terminé\n", getpid());
-    exit(EXIT_SUCCESS);
+    while (1)
+    {
+        printf("*");
+        fflush(stdout);
+        sleep(1);
+    }
 }
 
 void son(int tube[2], int tube_r[2])
 {
-    pid_t pid;
-    int i, tpm, tube_fp[2], tube_fp_r[2], pf;
-
+    pid_t pid, pid_m;
+    int i, tpm, tube_fp[2], tube_fp_r[2], pf, status;
+    signal(SIGUSR1, handler);
     printf("Fils de pid[%d] et mon pere est [%d]\n", getpid(), getppid());
     // sleep(5);
     // kill(getppid(), SIGUSR2);
@@ -109,9 +134,6 @@ void son(int tube[2], int tube_r[2])
     if (pid == 0)
         g_son(tube_fp, tube_fp_r);
 
-    signal(SIGUSR1, handler);
-    pause();
-
     if (close(tube_fp_r[1]) == -1)
     {
         perror("Fils: erreur lors de la fermeture du tube en ecriture\n");
@@ -123,6 +145,9 @@ void son(int tube[2], int tube_r[2])
         perror("Fils: Erreur lors de la fermeture du tube en ecriture\n");
         exit(EXIT_FAILURE);
     }
+
+    pause();
+
     for (i = 1; i <= 5; i++)
     {
         if (read(tube[0], &tpm, sizeof(int)) == -1)
@@ -170,21 +195,33 @@ void son(int tube[2], int tube_r[2])
         exit(EXIT_FAILURE);
     }
 
-    if (waitpid(pid, NULL, 0) == -1)
+    printf("Fils[%d] attente de 3s pour kill mon fils\n", getpid());
+    sleep(3);
+    kill(pid, SIGKILL);
+    // if (waitpid(pid, NULL, 0) == -1)
+    // {
+    //     perror("Fils: Erreur lors de l'attente de mon fils\n");
+    //     exit(EXIT_FAILURE);
+    // }
+    if ((pid_m = wait(&status)) == -1)
     {
         perror("Fils: Erreur lors de l'attente de mon fils\n");
         exit(EXIT_FAILURE);
     }
-
-    printf("Fils[%d] terminé\n", getpid());
+    if (WIFSIGNALED(status))
+    {
+        printf("Fils[%d] mon fils[%d] est mort le un signal[%d]\n", getpid(), pid_m, WTERMSIG(status));
+    }
+    printf("Fils[%d] attente de 5s pour me suicider\n", getpid());
+    sleep(5);
     kill(getpid(), SIGKILL);
 }
 
 void father()
 {
-    pid_t pid;
-    int tube[2], i, tube_r[2], tmp;
-
+    pid_t pid, pid_m;
+    int tube[2], i, tube_r[2], tmp, status;
+    signal(SIGUSR2, handler);
     if (pipe(tube) == -1 || pipe(tube_r) == -1)
     {
         perror("Pere: erreur lors de la création du tube \n");
@@ -211,7 +248,7 @@ void father()
         perror("Pere: Erreur lors de la fermeture du tube en lecture\n");
         exit(EXIT_FAILURE);
     }
-    signal(SIGUSR2, handler);
+
     pause();
     for (i = 1; i <= 5; i++)
     {
@@ -238,14 +275,22 @@ void father()
         exit(EXIT_FAILURE);
     }
 
-    if (waitpid(pid, NULL, 0) == -1)
-    {
-        perror("Pere: erreur lors de l'attente de mon fils \n");
-        exit(EXIT_FAILURE);
-    }
+    // if (waitpid(pid, NULL, 0) == -1)
+    // {
+    //     perror("Pere: erreur lors de l'attente de mon fils \n");
+    //     exit(EXIT_FAILURE);
+    // }
 
     printf("Pere[%d] termine \n", getpid());
-    // exit(EXIT_SUCCESS);
+    if ((pid_m = wait(&status)) == -1)
+    {
+        perror("Pere: Erreur lors de l'attente de mon fils\n");
+        exit(EXIT_FAILURE);
+    }
+    if (WIFSIGNALED(status))
+    {
+        printf("Pere[%d] mon fils[%d] est mort et le un signal[%d] est responsable\n", getpid(), pid_m, WTERMSIG(status));
+    }
     kill(getpid(), SIGKILL);
 }
 
