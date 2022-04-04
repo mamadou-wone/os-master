@@ -1,1 +1,1 @@
-# Hey there <img src="https://media.giphy.com/media/hvRJCLFzcasrR4ia7z/giphy.gif" width="25px">, Master on Operating System: Fork() | Pipe() | Signal() etc... in C-Programming
+### This repository is for Mastering  on Operating System: Fork() | Pipe() | Signal() etc... in C-Programming
