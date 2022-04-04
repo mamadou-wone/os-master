@@ -1,1 +1,0 @@
-* Passing an array of size > 2 to the pipe function and having any error ?
