@@ -178,7 +178,7 @@ int main(int argc, char **argv)
         exit(1);
     }
     int i;
-    if ((n = write(fd_write, argv[2], strlen(argv[2]))) == -1)
+    if ((n = write(fd_write, argv[2], 0)) == -1)
     {
         perror("write");
         exit(1);

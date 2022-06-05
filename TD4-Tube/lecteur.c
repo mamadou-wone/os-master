@@ -13,18 +13,37 @@ char buffer[S_BUF];
 
 int main(int argc, char const *argv[])
 {
-    int fd_read;
-
-    if ((fd_read = open(argv[1], O_RDONLY)) == -1)
+    int fd_read = open(argv[1], O_RDONLY);
+    switch (errno)
     {
-        perror("Erreur open");
+    case EACCES:
+        perror("Oups open 😵!");
         exit(1);
+        break;
+    case EFAULT:
+        perror("Error 😵!");
+        exit(1);
+        break;
+    case ENOENT:
+        perror("Error 😵!");
+        exit(1);
+        break;
+    default:
+        break;
     }
+
+    // if ((fd_read = open(argv[1], O_RDONLY)) == -1)
+    // {
+    //     perror("Erreur open");
+    //     exit(1);
+    // }
     if ((n = read(fd_read, buffer, S_BUF)) == -1)
     {
         perror("Erreur lecture");
         exit(1);
-    }else{
+    }
+    else
+    {
         buffer[n] = '\0';
         printf("%s\n", buffer);
     }
