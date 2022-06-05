@@ -28,6 +28,10 @@ int main(int argc, char const *argv[])
         perror("Error 😵!");
         exit(1);
         break;
+    case EISDIR:
+        perror("Error 😵!");
+        exit(1);
+        break;
     default:
         break;
     }
@@ -39,7 +43,7 @@ int main(int argc, char const *argv[])
     // }
     if ((n = read(fd_read, buffer, S_BUF)) == -1)
     {
-        perror("Erreur lecture");
+        perror("Erreur lecture 😵");
         exit(1);
     }
     else
