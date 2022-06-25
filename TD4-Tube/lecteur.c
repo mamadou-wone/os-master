@@ -1,3 +1,11 @@
+/**
+ * @file lecteur.c
+ * @author Mamadou WONE
+ * @date 2022-06-25
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
